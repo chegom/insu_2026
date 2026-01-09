@@ -531,7 +531,11 @@ def analyze_customer_policy(text: str, customer_info: Dict = None) -> Dict:
 
 # Extraction Rules (JSON Schema)
 
-반드시 아래 구조를 준수하여 JSON 데이터를 생성해. 금액은 '만원' 단위 숫자만 남겨. (예: 10,000,000 -> 1000)
+반드시 아래 구조를 준수하여 JSON 데이터를 생성해. 
+
+**[중요] 금액 단위 규칙:**
+- `total_monthly_premium`과 `monthly_premium`: **원 단위 숫자**로 반환 (예: 51,100원 -> 51100)
+- `coverage_status`의 보장 금액: **만원 단위 숫자**로 반환 (예: 10,000,000원 -> 1000)
 
 {
   "customer_profile": {
@@ -1275,53 +1279,174 @@ if mode == "관리자 모드 (Admin)":
                     st.subheader(f"상담 이력 ({len(history.data)}건)")
                     
                     for idx, item in enumerate(history.data):
-                        with st.expander(f"📌 {item.get('customer_name', 'N/A')} - {item.get('created_at', '')[:10]} - {item.get('agent_name', 'N/A')}"):
-                            col1, col2 = st.columns(2)
-                            
-                            with col1:
-                                st.write(f"**고객명:** {item.get('customer_name', 'N/A')}")
-                                st.write(f"**설계사:** {item.get('agent_name', 'N/A')}")
-                                st.write(f"**상담일:** {item.get('created_at', 'N/A')}")
-                                
+                        with st.expander(f"📌 {item.get('customer_name', 'N/A')} - {item.get('created_at', '')[:10]} - {item.get('agent_name', 'N/A')}", expanded=True):
+                            # 기본 정보 표시
+                            st.markdown("### 📋 상담 기본 정보")
+                            col_info1, col_info2, col_info3, col_info4 = st.columns(4)
+                            with col_info1:
+                                st.metric("고객명", item.get('customer_name', 'N/A'))
+                            with col_info2:
+                                st.metric("설계사", item.get('agent_name', 'N/A'))
+                            with col_info3:
+                                st.metric("상담일", item.get('created_at', 'N/A')[:10] if item.get('created_at') else 'N/A')
+                            with col_info4:
                                 if item.get('insurance_products'):
                                     product = item['insurance_products']
-                                    st.write(f"**추천 상품:** {product.get('product_name', 'N/A')} ({product.get('company', 'N/A')})")
+                                    st.metric("추천 상품", product.get('product_name', 'N/A'))
                             
-                            with col2:
-                                st.subheader("분석 결과")
-                                analysis_result = item.get('analysis_result', {})
-                                st.json(analysis_result)
+                            if item.get('insurance_products'):
+                                product = item['insurance_products']
+                                st.info(f"**보험사:** {product.get('company', 'N/A')}")
+                            
+                            st.markdown("---")
+                            
+                            # 분석 결과 표시
+                            analysis_result = item.get('analysis_result', {})
+                            
+                            if analysis_result:
+                                st.markdown("### 📊 상세 분석 결과")
                                 
-                                # 비교 리포트와 차트 복원
-                                if analysis_result and 'comparison' in analysis_result:
+                                # 재정 적합성 분석 표시
+                                if 'financial_diagnosis' in analysis_result:
+                                    financial = analysis_result['financial_diagnosis']
+                                    st.markdown("#### 💰 재정 적합성 분석")
+                                    col_f1, col_f2, col_f3 = st.columns(3)
+                                    with col_f1:
+                                        status = financial.get('status', 'N/A')
+                                        status_color = {'부족': '🔴', '적정': '🟢', '과다': '🟡'}.get(status, '⚪')
+                                        st.metric("재정 적합성", f"{status_color} {status}")
+                                    with col_f2:
+                                        score = financial.get('score', 0)
+                                        st.metric("재정 적합성 점수", f"{score}/100")
+                                    with col_f3:
+                                        current_ratio = financial.get('current_premium_ratio', 0)
+                                        st.metric("현재 보험료 비율", f"{current_ratio:.1f}%")
+                                    
+                                    if financial.get('comment'):
+                                        st.info(f"💡 {financial.get('comment')}")
+                                    
                                     st.markdown("---")
-                                    st.subheader("📊 비교 리포트 복원")
+                                
+                                # 생애 주기 분석 표시
+                                if 'lifecycle_analysis' in analysis_result:
+                                    lifecycle = analysis_result['lifecycle_analysis']
+                                    st.markdown("#### 📋 생애 주기별 보장 분석")
+                                    col_l1, col_l2 = st.columns(2)
+                                    with col_l1:
+                                        st.write(f"**연령대:** {lifecycle.get('age_group', 'N/A')}")
+                                        if lifecycle.get('required_coverage'):
+                                            st.write("**필수 보장:**")
+                                            for coverage in lifecycle.get('required_coverage', []):
+                                                st.write(f"- {coverage}")
+                                    with col_l2:
+                                        if lifecycle.get('current_gap'):
+                                            st.warning(f"⚠️ {lifecycle.get('current_gap')}")
+                                        if lifecycle.get('priority_recommendation'):
+                                            st.info(f"💡 {lifecycle.get('priority_recommendation')}")
                                     
-                                    comparison = analysis_result.get('comparison', {})
+                                    st.markdown("---")
+                                
+                                # 보장 비교 표시
+                                if 'coverage_comparison' in analysis_result:
+                                    st.markdown("#### 📊 보장 범위 비교")
+                                    comparison_list = analysis_result['coverage_comparison']
                                     
-                                    # 진단비 비교 차트 생성
+                                    for comp in comparison_list:
+                                        with st.expander(f"🔍 {comp.get('category', 'N/A')}", expanded=False):
+                                            col_c1, col_c2 = st.columns(2)
+                                            with col_c1:
+                                                st.write("**현재 보장 (AS-IS)**")
+                                                st.write(comp.get('asis_text', 'N/A'))
+                                            with col_c2:
+                                                st.write("**추천 보장 (TO-BE)**")
+                                                st.write(comp.get('tobe_text', 'N/A'))
+                                            
+                                            verdict = comp.get('verdict', '')
+                                            if 'TO-BE 승리' in verdict:
+                                                st.success(f"✅ {verdict}: {comp.get('reason', '')}")
+                                            elif 'AS-IS 유리' in verdict:
+                                                st.info(f"ℹ️ {verdict}: {comp.get('reason', '')}")
+                                            else:
+                                                st.write(f"⚖️ {verdict}: {comp.get('reason', '')}")
+                                    
+                                    # 보장 비교 차트 생성
                                     chart_data = []
-                                    for key in ['암진단비_차이', '뇌진단비_차이', '심장진단비_차이', '수술비_차이']:
-                                        if key in comparison:
-                                            diff_data = comparison[key]
+                                    for comp in comparison_list:
+                                        category = comp.get('category', '')
+                                        asis_val = _extract_amount(str(comp.get('asis_text', '0')))
+                                        tobe_val = _extract_amount(str(comp.get('tobe_text', '0')))
+                                        
+                                        if asis_val > 0 or tobe_val > 0:
                                             chart_data.append({
-                                                '보장항목': key.replace('_차이', ''),
-                                                '현재': _extract_amount(diff_data.get('현재', '0')),
-                                                '신규': _extract_amount(diff_data.get('신규', '0'))
+                                                '보장항목': category,
+                                                '현재': asis_val,
+                                                '신규': tobe_val
                                             })
                                     
                                     if chart_data:
                                         df_chart = pd.DataFrame(chart_data)
                                         fig = px.bar(df_chart, x='보장항목', y=['현재', '신규'], 
-                                                    barmode='group', title="보장금액 비교",
+                                                    barmode='group', title="보장금액 비교 (현재 vs 신규)",
                                                     labels={'value': '금액 (만원)', 'variable': '구분'},
                                                     color_discrete_map={'현재': '#FF6B6B', '신규': '#4ECDC4'})
                                         st.plotly_chart(fig, use_container_width=True)
                                     
-                                    # 추천 사항 표시
-                                    if 'recommendation' in analysis_result:
-                                        st.markdown("### 💡 추천 사항")
-                                        st.info(analysis_result['recommendation'])
+                                    st.markdown("---")
+                                
+                                # 최종 추천 표시
+                                if 'final_recommendation' in analysis_result:
+                                    st.markdown("#### 💡 최종 리모델링 제안")
+                                    recommendation = analysis_result['final_recommendation']
+                                    
+                                    col_r1, col_r2 = st.columns(2)
+                                    with col_r1:
+                                        st.write(f"**전략:** {recommendation.get('strategy', 'N/A')}")
+                                        if recommendation.get('expected_premium'):
+                                            st.metric("예상 보험료", f"{recommendation.get('expected_premium')}만원")
+                                    with col_r2:
+                                        if recommendation.get('reasoning'):
+                                            st.info(f"📋 {recommendation.get('reasoning')}")
+                                    
+                                    if recommendation.get('closing_ment'):
+                                        st.success(f"💬 {recommendation.get('closing_ment')}")
+                                    
+                                    st.markdown("---")
+                                
+                                # 우선순위 점수
+                                if 'priority_score' in analysis_result:
+                                    score = analysis_result['priority_score']
+                                    st.metric("추천 우선순위 점수", f"{score}/100")
+                                    st.markdown("---")
+                                
+                                # 비교 요약 표시
+                                if 'comparison_summary' in analysis_result:
+                                    st.markdown("#### 📋 비교 요약")
+                                    summary = analysis_result['comparison_summary']
+                                    
+                                    col_sum1, col_sum2 = st.columns(2)
+                                    with col_sum1:
+                                        if summary.get('current_better'):
+                                            st.markdown("##### ✅ 현재 보험이 더 나은 항목")
+                                            for item_val in summary.get('current_better', []):
+                                                st.success(f"• {item_val}")
+                                    
+                                    with col_sum2:
+                                        if summary.get('new_better'):
+                                            st.markdown("##### 🆕 신규 상품이 더 나은 항목")
+                                            for item_val in summary.get('new_better', []):
+                                                st.warning(f"• {item_val}")
+                                    
+                                    if summary.get('overall_verdict'):
+                                        st.markdown("---")
+                                        verdict = summary.get('overall_verdict', '')
+                                        if '유지' in verdict:
+                                            st.success(f"🏆 **종합 판단: {verdict}**")
+                                        elif '전환' in verdict:
+                                            st.warning(f"🏆 **종합 판단: {verdict}**")
+                                        elif '추가' in verdict:
+                                            st.info(f"🏆 **종합 판단: {verdict}**")
+                            else:
+                                st.info("분석 결과가 없습니다.")
                 else:
                     st.info("상담 이력이 없습니다.")
             except Exception as e:
@@ -1428,7 +1553,12 @@ elif mode == "설계사 모드 (Agent)":
                     with col2:
                         st.metric("나이", f"{profile.get('age', 0)}세")
                     with col3:
-                        st.metric("월 총 납입 보험료", f"{total_premium:,}원")
+                        # 보험료가 만원 단위로 저장된 경우 원 단위로 변환
+                        if total_premium < 1000:  # 만원 단위로 저장된 것으로 추정
+                            total_premium_display = int(total_premium * 10000)
+                        else:
+                            total_premium_display = int(total_premium)
+                        st.metric("월 총 납입 보험료", f"{total_premium_display:,}원")
                     with col4:
                         if monthly_income > 0:
                             st.metric("월수입 대비 비율", f"{premium_ratio:.1f}%")
@@ -1439,7 +1569,12 @@ elif mode == "설계사 모드 (Agent)":
                         col1, col2 = st.columns(2)
                         with col1:
                             st.write(f"**월수입:** {monthly_income:,}만원")
-                            st.write(f"**월 보험료:** {total_premium:,}원")
+                            # 보험료가 만원 단위로 저장된 경우 원 단위로 변환
+                            if total_premium < 1000:  # 만원 단위로 저장된 것으로 추정
+                                total_premium_display = int(total_premium * 10000)
+                            else:
+                                total_premium_display = int(total_premium)
+                            st.write(f"**월 보험료:** {total_premium_display:,}원")
                             st.write(f"**보험료 비율:** {premium_ratio:.1f}%")
                         
                         with col2:
@@ -1475,7 +1610,13 @@ elif mode == "설계사 모드 (Agent)":
                                 st.write(f"**보험 종류:** {insurance.get('insurance_type', 'N/A')}")
                                 st.write(f"**납입기간:** {insurance.get('payment_period', 'N/A')}")
                                 st.write(f"**보험기간:** {insurance.get('coverage_period', 'N/A')}")
-                                st.write(f"**월 보험료:** {insurance.get('monthly_premium', 0):,}원")
+                                # 보험료가 만원 단위로 저장된 경우 원 단위로 변환
+                                monthly_premium = insurance.get('monthly_premium', 0)
+                                if monthly_premium < 1000:  # 만원 단위로 저장된 것으로 추정
+                                    monthly_premium_display = int(monthly_premium * 10000)
+                                else:
+                                    monthly_premium_display = int(monthly_premium)
+                                st.write(f"**월 보험료:** {monthly_premium_display:,}원")
                             
                             with col2:
                                 st.write("**보험 설명:**")
@@ -1484,12 +1625,18 @@ elif mode == "설계사 모드 (Agent)":
                     # 보험 목록 요약 테이블
                     insurance_summary = []
                     for insurance in insurance_list:
+                        monthly_premium = insurance.get('monthly_premium', 0)
+                        # 보험료가 만원 단위로 저장된 경우 원 단위로 변환
+                        if monthly_premium < 1000:  # 만원 단위로 저장된 것으로 추정
+                            monthly_premium_display = int(monthly_premium * 10000)
+                        else:
+                            monthly_premium_display = int(monthly_premium)
                         insurance_summary.append({
                             '보험명': insurance.get('insurance_name', 'N/A'),
                             '보험 종류': insurance.get('insurance_type', 'N/A'),
                             '납입기간': insurance.get('payment_period', 'N/A'),
                             '보험기간': insurance.get('coverage_period', 'N/A'),
-                            '월 보험료': f"{insurance.get('monthly_premium', 0):,}원"
+                            '월 보험료': f"{monthly_premium_display:,}원"
                         })
                     
                     df_insurance = pd.DataFrame(insurance_summary)
