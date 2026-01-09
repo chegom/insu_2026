@@ -8,8 +8,20 @@ Railway에 배포한 앱에서 Supabase를 연결하려면 **환경 변수**를 
 1. https://railway.app 접속
 2. 배포한 프로젝트 선택
 
-### 2. 환경 변수 설정
-프로젝트 대시보드에서 **"Variables"** 탭 클릭
+### 2. 환경 변수 설정 (중요: 위치 확인!)
+
+⚠️ **"Shared Variables"가 아닙니다!**
+
+환경 변수는 **서비스(Service) 레벨**에서 설정해야 합니다:
+
+1. 프로젝트 대시보드에서 배포된 **서비스(Service)** 클릭
+   - 보통 "web" 또는 프로젝트 이름과 같은 서비스가 있습니다
+2. 서비스 페이지에서 **"Variables"** 탭 클릭
+   - 왼쪽 사이드바에 "Variables" 메뉴가 있습니다
+   - 또는 상단 탭에서 "Variables" 선택
+
+❌ **잘못된 위치**: Project Settings → Shared Variables (이건 여러 서비스 공유용)
+✅ **올바른 위치**: Service → Variables (서비스별 환경 변수)
 
 다음 3개의 환경 변수를 **각각 추가**하세요:
 
