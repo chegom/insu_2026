@@ -91,7 +91,44 @@ streamlit run app.py
 4. **Agent - 고객 분석**: 고객의 기존 보험 증권 PDF를 업로드하여 현재 보장내역을 분석합니다.
 5. **Agent - 비교 추천**: 고객 데이터와 등록된 상품을 비교하여 부족한 담보를 도출하고 시각화합니다.
 
+## 배포 방법
+
+### Streamlit Cloud 배포 (추천)
+
+1. GitHub 저장소를 Public 또는 Private으로 설정
+2. https://streamlit.io/cloud 접속 후 GitHub 계정으로 로그인
+3. "New app" 클릭하여 저장소 연결
+4. 환경 변수(Secrets) 설정:
+   - `[supabase]` 섹션: `url`, `key`
+   - `[google]` 섹션: `api_key`
+5. 배포 완료 후 공유 가능한 URL 생성
+
+자세한 배포 가이드는 [DEPLOYMENT.md](./DEPLOYMENT.md)를 참고하세요.
+
+### 로컬 실행
+
+```bash
+# 저장소 클론
+git clone https://github.com/chegom/insu_2026.git
+cd insu_2026
+
+# 의존성 설치
+pip install -r requirements.txt
+
+# 환경 변수 설정
+mkdir .streamlit
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+# secrets.toml 파일을 열어 실제 API 키 입력
+
+# 실행
+streamlit run app.py
+```
+
 ## 주의사항
+
+⚠️ **테스트 버전**: 현재는 로그인 기능이 없어 누구나 접근 가능합니다.
+- 나중에 로그인 기능을 추가하여 접근을 제한할 예정입니다.
+- 민감한 데이터는 사용하지 마세요.
 
 - Gemini API는 무료 티어가 있지만 사용량 제한이 있을 수 있습니다.
 - 대용량 PDF 파일(1,000페이지 이상) 처리 시 시간이 걸릴 수 있습니다.

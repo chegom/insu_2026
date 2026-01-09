@@ -27,7 +27,10 @@ wheels/
 *.egg
 
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
+.streamlit/*.toml
+!.streamlit/config.toml
+!.streamlit/secrets.toml.example
 
 # IDE
 .vscode/
