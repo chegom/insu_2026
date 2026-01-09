@@ -226,7 +226,11 @@ def init_supabase():
     """Supabase 클라이언트 초기화"""
     try:
         if not SUPABASE_URL or not SUPABASE_KEY:
-            st.warning("⚠️ Supabase 설정이 필요합니다. `.streamlit/secrets.toml` 파일에 Supabase URL과 Key를 설정해주세요.")
+            # Railway 등 배포 환경에서는 환경 변수 사용 안내
+            if os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("PORT"):
+                st.warning("⚠️ Supabase 설정이 필요합니다. Railway 대시보드의 'Variables' 탭에서 환경 변수를 설정해주세요:\n- `SUPABASE_URL`\n- `SUPABASE_KEY`")
+            else:
+                st.warning("⚠️ Supabase 설정이 필요합니다. `.streamlit/secrets.toml` 파일에 Supabase URL과 Key를 설정해주세요.")
             return None
         client = create_client(SUPABASE_URL, SUPABASE_KEY)
         # 연결 테스트

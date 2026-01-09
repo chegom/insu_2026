@@ -22,20 +22,28 @@ Railway는 무료 티어를 제공하며, 더 많은 제어권과 유연성을 �
      - `chegom/insu_2026` 저장소 선택
 4. 저장소 선택 후 "Deploy Now" 클릭
 
-### 3. 환경 변수 설정
-Railway 대시보드에서 "Variables" 탭에 다음 환경 변수를 추가:
+### 3. 환경 변수 설정 (중요!)
+Railway 대시보드에서 프로젝트 선택 → "Variables" 탭 클릭
+
+**방법 1: 개별 환경 변수로 설정 (추천)**
+다음 3개의 환경 변수를 각각 추가:
+
+| 변수명 | 값 |
+|--------|-----|
+| `SUPABASE_URL` | `https://xxxxx.supabase.co` (Supabase 프로젝트 URL) |
+| `SUPABASE_KEY` | `eyJhbGci...` (Supabase Anon Key) |
+| `GEMINI_API_KEY` | `AIza...` (Google Gemini API 키) |
+
+**방법 2: Streamlit Secrets 형식으로 설정**
+단일 환경 변수로 설정하려면:
 
 ```
-SUPABASE_URL=여기에_SUPABASE_URL
-SUPABASE_KEY=여기에_SUPABASE_ANON_KEY
-GEMINI_API_KEY=여기에_GEMINI_API_KEY
+STREAMLIT_SECRETS={"supabase":{"url":"https://xxxxx.supabase.co","key":"eyJhbGci..."},"google":{"api_key":"AIza..."}}
 ```
 
-또는 Streamlit Secrets 형식으로 설정하려면:
-
-```
-STREAMLIT_SECRETS={"supabase":{"url":"여기에_SUPABASE_URL","key":"여기에_SUPABASE_ANON_KEY"},"google":{"api_key":"여기에_GEMINI_API_KEY"}}
-```
+⚠️ **주의**: Railway에서는 환경 변수를 설정한 후 **앱을 재배포**해야 적용됩니다.
+- "Deployments" 탭에서 "Redeploy" 클릭하거나
+- 코드를 푸시하면 자동으로 재배포됩니다
 
 ### 4. 배포 설정
 - Railway가 자동으로 `requirements.txt`를 인식합니다
