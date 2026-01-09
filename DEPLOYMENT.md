@@ -4,14 +4,23 @@
 
 Railway는 무료 티어를 제공하며, 더 많은 제어권과 유연성을 제공합니다.
 
-### 1. Railway 계정 생성
+### 1. Railway 계정 생성 및 GitHub 연결
 1. https://railway.app 접속
 2. GitHub 계정으로 로그인
+3. **중요**: GitHub 권한 요청 시 저장소 접근 권한을 허용해야 합니다
+   - Railway가 저장소를 읽을 수 있도록 권한 부여 필요
 
 ### 2. 새 프로젝트 생성
-1. "New Project" 클릭
+1. Railway 대시보드에서 "New Project" 클릭
 2. "Deploy from GitHub repo" 선택
-3. `chegom/insu_2026` 저장소 선택
+3. 저장소 목록에서 `chegom/insu_2026` 찾기
+   - **만약 저장소가 안 보이면**:
+     - Railway 대시보드 우측 상단 프로필 아이콘 클릭
+     - "Settings" → "Connected Accounts" → GitHub 확인
+     - "Configure GitHub App" 클릭하여 권한 재설정
+     - 저장소 접근 권한을 "All repositories" 또는 "Selected repositories"로 설정
+     - `chegom/insu_2026` 저장소 선택
+4. 저장소 선택 후 "Deploy Now" 클릭
 
 ### 3. 환경 변수 설정
 Railway 대시보드에서 "Variables" 탭에 다음 환경 변수를 추가:
