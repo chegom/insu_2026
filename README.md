@@ -93,7 +93,22 @@ streamlit run app.py
 
 ## 배포 방법
 
-### Streamlit Cloud 배포 (추천)
+### Railway 배포 (추천) 🚀
+
+Railway는 무료 티어를 제공하며 더 많은 제어권을 제공합니다.
+
+1. https://railway.app 접속 후 GitHub 계정으로 로그인
+2. "New Project" → "Deploy from GitHub repo" 선택
+3. `chegom/insu_2026` 저장소 선택
+4. 환경 변수 설정 (Variables 탭):
+   - `SUPABASE_URL`: Supabase 프로젝트 URL
+   - `SUPABASE_KEY`: Supabase Anon Key
+   - `GEMINI_API_KEY`: Google Gemini API 키
+5. 배포 완료 후 자동 생성된 URL 확인
+
+자세한 배포 가이드는 [DEPLOYMENT.md](./DEPLOYMENT.md)를 참고하세요.
+
+### Streamlit Cloud 배포
 
 1. GitHub 저장소를 Public 또는 Private으로 설정
 2. https://streamlit.io/cloud 접속 후 GitHub 계정으로 로그인

@@ -1,5 +1,49 @@
 # 배포 가이드
 
+## Railway 배포 방법 (추천)
+
+Railway는 무료 티어를 제공하며, 더 많은 제어권과 유연성을 제공합니다.
+
+### 1. Railway 계정 생성
+1. https://railway.app 접속
+2. GitHub 계정으로 로그인
+
+### 2. 새 프로젝트 생성
+1. "New Project" 클릭
+2. "Deploy from GitHub repo" 선택
+3. `chegom/insu_2026` 저장소 선택
+
+### 3. 환경 변수 설정
+Railway 대시보드에서 "Variables" 탭에 다음 환경 변수를 추가:
+
+```
+SUPABASE_URL=여기에_SUPABASE_URL
+SUPABASE_KEY=여기에_SUPABASE_ANON_KEY
+GEMINI_API_KEY=여기에_GEMINI_API_KEY
+```
+
+또는 Streamlit Secrets 형식으로 설정하려면:
+
+```
+STREAMLIT_SECRETS={"supabase":{"url":"여기에_SUPABASE_URL","key":"여기에_SUPABASE_ANON_KEY"},"google":{"api_key":"여기에_GEMINI_API_KEY"}}
+```
+
+### 4. 배포 설정
+- Railway가 자동으로 `requirements.txt`를 인식합니다
+- `Procfile` 또는 `railway.json`이 있으면 자동으로 사용됩니다
+- 포트는 Railway가 자동으로 할당합니다 (`$PORT` 환경 변수 사용)
+
+### 5. 배포 완료
+- 배포가 완료되면 Railway가 자동으로 URL을 생성합니다
+- "Settings" → "Generate Domain"에서 커스텀 도메인 설정 가능
+
+### Railway 장점
+- ✅ 무료 티어 제공 (월 $5 크레딧)
+- ✅ 자동 HTTPS
+- ✅ 커스텀 도메인 지원
+- ✅ 더 많은 제어권
+- ✅ 로그 확인 용이
+
 ## Streamlit Cloud 배포 방법
 
 ### 1. GitHub 저장소 준비

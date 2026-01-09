@@ -194,15 +194,26 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
-# Streamlit secrets에서 설정 가져오기
+# Streamlit secrets 또는 환경 변수에서 설정 가져오기
+import os
+
 try:
+    # Streamlit secrets 우선 시도
     SUPABASE_URL = st.secrets.get("supabase", {}).get("url")
     SUPABASE_KEY = st.secrets.get("supabase", {}).get("key")
     GEMINI_API_KEY = st.secrets.get("google", {}).get("api_key")
-except Exception as e:
-    st.warning(f"⚠️ 설정 파일 읽기 오류: {str(e)}")
+except Exception:
+    # Streamlit secrets가 없으면 환경 변수에서 가져오기 (Railway 등)
+    SUPABASE_URL = os.environ.get("SUPABASE_URL")
+    SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
+# 둘 다 없으면 None
+if not SUPABASE_URL:
     SUPABASE_URL = None
+if not SUPABASE_KEY:
     SUPABASE_KEY = None
+if not GEMINI_API_KEY:
     GEMINI_API_KEY = None
 
 # 고정 user_id 값
